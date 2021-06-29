@@ -3,34 +3,41 @@ import json
 import sys
 import time
 
-typ = sys.argv[1]
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('port', type=str)
+parser.add_argument('type', type=str)
+parser.add_argument('command', type=str)
+args = parser.parse_args()
+
+typ = args.type
 data = None
 
 if typ == 'ac':
-    cmd = sys.argv[2]
+    cmd = args.command
     data = {
         'type': typ,
         'cmd': cmd,
     }
 
 else:
-    print('No such type')
+    print(f'No such type: {typ}')
     exit()
 
 assert data is not None
 
-ser = serial.Serial('/dev/ttyUSB0', 38400)
-print('Wait connection...')
+port = args.port
+ser = serial.Serial(port, 38400)
+print('Wait connection established...')
 time.sleep(3) # Wait connection established
 
 msg = json.dumps(data) + '\n'
 print(msg)
 
 try:
-    while True:
-        print('Wait sent...')
-        ser.write(msg.encode('ascii'))
-        time.sleep(1) # Wait sent
-        print(ser.readline())
+    print('Wait transmission done...')
+    ser.write(msg.encode('ascii'))
+    print(ser.readline().decode('ascii'))
 finally:
     ser.close()
+
